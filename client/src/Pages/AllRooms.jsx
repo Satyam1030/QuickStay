@@ -1,12 +1,23 @@
 import React, { useState } from "react";
-import { assets, facilityIcons, roomsDummyData } from "../assets/assets";
-import { useNavigate } from "react-router-dom";
+import { assets, facilityIcons } from "../assets/assets";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import StarRating from "../Components/StarRating";
+import { useAppContext } from "../context/AppContext";
 
 const AllRooms=()=>{
 
-    const navigate=useNavigate();
+    const [searchParams,setSearchParams]=useSearchParams();
+    const {rooms,navigate,currency}=useAppContext()
+
     const [openFilters,setOpenFilters]=useState(false);
+
+    const [selectedFilters,setSelectedFilters]=useState({
+        roomType:[],
+        priceRange:[]
+    })
+
+    const [selectedSort,setSelectedSort]=useState([])
+    
 
     const CheckBox=({label,selected=false,onChange=()=>{}})=>{
         return (
@@ -64,12 +75,12 @@ const AllRooms=()=>{
                          <div className="md:w-1/2 flex flex-col gap-2">
                             <p className="text-gray-500">{room.hotel.city}</p>
                             <p onClick={()=>{navigate(`/rooms/${room._id}`);scrollTo(0,0)}} className="text-gray-800 text-3xl font-playfair cursor-pointer">{room.hotel.name}</p>
-                            <div className="flex item-center">
+                            <div className="flex items-center">
                                 <StarRating/>
                                 <p className="ml-2">200+ reviews</p>
                             </div>
 
-                            <div>
+                            <div className="flex items-center gap-1 text-sm text-gray-500">
                                 <img src={assets.locationIcon} alt="location-icon" />
                                 <span>{room.hotel.address}</span>
                             </div>

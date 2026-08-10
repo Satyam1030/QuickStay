@@ -54,7 +54,7 @@ const RoomDetails=()=>{
             <div className="flex flex-col md:flex-row md:justify-between mt-10">
                 <div className="flex flex-col border-b border-[#6B7280]-30">
                     <h1 className="text-3xl md:text-4xl font-playfair">Experience Luxury Like Never Before</h1>
-                    <div className="flex fleex-wrap items-center mt-3 mb-6 gap-4">
+                    <div className="flex flex-wrap items-center mt-3 mb-6 gap-4">
                         {room.amenities.map((feature,index)=>(
                             <div key={index} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-100">
                                 <img src={facilityIcons[feature]} alt={feature} className="w-5 h-5" />

@@ -1,10 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { roomsDummyData, userDummyData } from "../../assets/assets";
 import Title from "../../Components/Title";
+import { useAppContext } from "../../context/AppContext";
 
 const ListRoom=()=>{
 
-    const [rooms,setRooms]=useState(roomsDummyData);
+    const [rooms,setRooms]=useState([]);
+
+    const {axios,getToken,user,currency}=useAppContext();
+
+    //fetch rooms of hotel owner
+    const fetchRooms=async()=>{
+        try {
+            const {data}=await axios.get('/api/rooms/owner',{headers:{Authorization:`Bearer ${getToken()}`}});
+
+            if(data.success){
+                setRooms(data.rooms);
+
+            }else{
+                toast.error(data.message);
+            }
+
+        } catch (error) {
+            toast.error(error.message);
+        }
+    }
+
+    //Toggle Availability of rooms
+    const toggleAvailability=async(roomId)=>{
+        const {data}=await axios.post('/api/rooms/toggle-availability',{roomId},{headers:{Authorization:`Bearer ${getToken()}`}})
+        if(data.success){
+            toast.success(data.message);
+            fetchRooms();
+        }else{
+            toast.error(data.message);
+        }
+    }
+
+    useEffect(()=>{
+        if(user){
+            fetchRooms();
+        }
+    },[user])
 
     return(
         <div>
@@ -31,12 +68,12 @@ const ListRoom=()=>{
                             <tr key={index}>
                                 <td className="py-3 px-4 text-gray-700 border-t border-gray-300">{item.roomType}</td>
                                 <td className="py-3 px-4 text-gray-700 border-t border-gray-300 max-sm:hidden">{item.amenities.join(',')}</td>
-                                <td className="py-3 px-4 text-gray-700 border-t border-gray-300">{item.pricePerNight}</td>
+                                <td className="py-3 px-4 text-gray-700 border-t border-gray-300">{currency} {item.pricePerNight}</td>
                                 
                                 <td className="py-3 px-4 text-red-500 text-sm text-center border-t border-gray-300">
                                     <label className="relative inline-flex items-center cursor-pointer
                                     text-gray-900 gap-3">
-                                        <input type="checkbox" className="sr-only peer" checked={item.isAvailable}/>
+                                        <input onChange={()=>toggleAvailability(item._id)} type="checkbox" className="sr-only peer" checked={item.isAvailable}/>
                                         <div className="w-12 h-7 bg-slate-300 rounded-full peer peer-checked:bg-blue-600
                                         transition-colors duration-200 ">
                                         </div>
