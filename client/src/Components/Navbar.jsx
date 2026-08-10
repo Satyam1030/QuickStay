@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {assets} from "../assets/assets"
 import { useClerk,UserButton } from "@clerk/react";
@@ -28,17 +28,11 @@ const Navbar = () => {
     const location=useLocation()
 
     useEffect(() => {
-
         if(location.pathname!=='/'){
-            setIsScrolled(true);
+            Promise.resolve().then(() => setIsScrolled(true));
             return;
-        }else{
-            setIsScrolled(false);
         }
-
-        setIsScrolled(prev=>location.pathname!=='/'?true :prev);
-
-
+        Promise.resolve().then(() => setIsScrolled(window.scrollY > 10));
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 10);
         };
@@ -57,10 +51,10 @@ const Navbar = () => {
                 {/* Desktop Nav */}
                 <div className="hidden md:flex items-center gap-4 lg:gap-8">
                     {navLinks.map((link, i) => (
-                        <a key={i} href={link.path} className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-700" : "text-white"}`}>
+                        <Link key={i} to={link.path} className={`group flex flex-col gap-0.5 ${isScrolled ? "text-gray-700" : "text-white"}`}>
                             {link.name}
                             <div className={`${isScrolled ? "bg-gray-700" : "bg-white"} h-0.5 w-0 group-hover:w-full transition-all duration-300`} />
-                        </a>
+                        </Link>
                     ))}
                     { user && (<button onClick={()=> isOwner ? navigate('/owner') :setShowHotelReg(true) } className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
                         {isOwner ? 'Dashboard' : 'List Your Hotel'}
@@ -103,9 +97,9 @@ const Navbar = () => {
                     </button>
 
                     {navLinks.map((link, i) => (
-                        <a key={i} href={link.path} onClick={() => setIsMenuOpen(false)}>
+                        <Link key={i} to={link.path} onClick={() => setIsMenuOpen(false)}>
                             {link.name}
-                        </a>
+                        </Link>
                     ))}
 
                     {user && <button onClick={()=> isOwner ? navigate('/owner') :setShowHotelReg(true) } className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">

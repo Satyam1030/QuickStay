@@ -1,4 +1,3 @@
-import React from "react";
 import { testimonials } from "../assets/assets";
 import Title from "./Title";
 import StarRating from "./StarRating";

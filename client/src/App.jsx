@@ -1,7 +1,6 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import Home from "./Pages/Home";
-import { Show, SignInButton, SignUpButton, UserButton } from '@clerk/react'
 import Footer from "./Components/Footer";
 import AllRooms from "./Pages/AllRooms";
 import RoomDetails from "./Pages/RoomDetails";

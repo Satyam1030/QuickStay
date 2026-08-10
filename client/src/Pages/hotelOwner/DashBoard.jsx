@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Title from "../../Components/Title";
 import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 const DashBoard=()=>{
 
@@ -11,11 +12,12 @@ const DashBoard=()=>{
         totalRevenue:0,
     });
 
-    const {currency,user,getToken,toast,axios}=useAppContext();
+    const {currency,user,getToken,axios}=useAppContext();
 
-    const fetchDashboardData=async()=>{
+    const fetchDashboardData=useCallback(async()=>{
         try {
-            const {data}=await axios.get('/api/bookings/hotel',{headers:{Authorization:`Bearer ${await getToken()}`}})
+            const token = await getToken();
+            const {data}=await axios.get('/api/bookings/hotel',{headers:{Authorization:`Bearer ${token}`}})
 
             if(data.success){
                 setDashboardData(data.dashboardData);
@@ -26,13 +28,13 @@ const DashBoard=()=>{
         } catch (error) {
             toast.error(error.message);
         }
-    }
+    }, [getToken, axios])
 
     useEffect(()=>{
         if(user){
-            fetchDashboardData();
+            Promise.resolve().then(() => fetchDashboardData());
         }
-    },[user])
+    },[user, fetchDashboardData])
 
     return(
         <div>
@@ -75,14 +77,13 @@ const DashBoard=()=>{
                         {dashboardData.bookings.map((item,index)=>(
                             <tr key={index}>
                                 <td className="px-4 py-3 text-gray-700 border-t border-gray-300">
-                                    {item.user.username}</td>
+                                    {item.user?.username || "Guest"}</td>
                                 <td className="px-4 py-3 max-sm:hidden text-gray-700 border-t border-gray-300">
-                                    {item.room.roomType}</td>
+                                    {item.room?.roomType || "Standard"}</td>
                                 <td className="text-center px-4 py-3 text-gray-700 border-t border-gray-300">
                                     {currency}{item.totalPrice}</td>
                                 <td className="px-4 py-3 flex border-t border-gray-300">
-                                    <button className={`py-1 px-3 text-xs rounded-full mx-auto
-                                        {item.isPaid ? "bg-green-200 text-green-600":"bg-amber-200 text-yellow-600"}`}>{item.isPaid ? "Completed" : 'Pending'}</button>
+                                    <button className={`py-1 px-3 text-xs rounded-full mx-auto ${item.isPaid ? "bg-green-200 text-green-600" : "bg-amber-200 text-yellow-600"}`}>{item.isPaid ? "Completed" : 'Pending'}</button>
                                 </td>
                             </tr>
                         ))}

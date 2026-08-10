@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { roomsDummyData, userDummyData } from "../../assets/assets";
+import { useEffect, useState, useCallback } from "react";
 import Title from "../../Components/Title";
 import { useAppContext } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 const ListRoom=()=>{
 
@@ -10,9 +10,10 @@ const ListRoom=()=>{
     const {axios,getToken,user,currency}=useAppContext();
 
     //fetch rooms of hotel owner
-    const fetchRooms=async()=>{
+    const fetchRooms=useCallback(async()=>{
         try {
-            const {data}=await axios.get('/api/rooms/owner',{headers:{Authorization:`Bearer ${getToken()}`}});
+            const token = await getToken();
+            const {data}=await axios.get('/api/rooms/owner',{headers:{Authorization:`Bearer ${token}`}});
 
             if(data.success){
                 setRooms(data.rooms);
@@ -24,24 +25,45 @@ const ListRoom=()=>{
         } catch (error) {
             toast.error(error.message);
         }
-    }
+    }, [getToken, axios])
 
     //Toggle Availability of rooms
     const toggleAvailability=async(roomId)=>{
-        const {data}=await axios.post('/api/rooms/toggle-availability',{roomId},{headers:{Authorization:`Bearer ${getToken()}`}})
-        if(data.success){
-            toast.success(data.message);
-            fetchRooms();
-        }else{
-            toast.error(data.message);
+        try {
+            const token = await getToken();
+            const {data}=await axios.post('/api/rooms/toggle-availability',{roomId},{headers:{Authorization:`Bearer ${token}`}})
+            if(data.success){
+                toast.success(data.message);
+                fetchRooms();
+            }else{
+                toast.error(data.message);
+            }
+        } catch (error) {
+            toast.error(error.message);
         }
     }
 
     useEffect(()=>{
+        let isMounted = true;
         if(user){
-            fetchRooms();
+            (async () => {
+                try {
+                    const token = await getToken();
+                    const {data}=await axios.get('/api/rooms/owner',{headers:{Authorization:`Bearer ${token}`}});
+                    if (isMounted) {
+                        if(data.success){
+                            setRooms(data.rooms);
+                        }else{
+                            toast.error(data.message);
+                        }
+                    }
+                } catch (error) {
+                    if (isMounted) toast.error(error.message);
+                }
+            })();
         }
-    },[user])
+        return () => { isMounted = false; };
+    },[user, getToken, axios])
 
     return(
         <div>

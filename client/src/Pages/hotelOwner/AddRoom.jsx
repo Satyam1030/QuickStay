@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Title from "../../Components/Title";
 import { assets } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
-import axios from "axios";
 
 const AddRoom=()=>{
 
-    const {axios,getToken}=useAppContext();
+    const {axios,getToken,fetchRooms}=useAppContext();
 
     const [images,setImages]=useState({
         1:null,
@@ -34,7 +33,7 @@ const AddRoom=()=>{
         e.preventDefault();
         //check if all inputs are filled
         if(!inputs.roomType || !inputs.amenities || !inputs.pricePerNight || !Object.values(images).some(image=>image)){
-            toast.error("Please fill i all the details");
+            toast.error("Please fill in all the details");
             return;
         }
         setLoading(true);
@@ -51,10 +50,12 @@ const AddRoom=()=>{
                 images[key] && formData.append('images',images[key])
             })
 
-            const data=await axios.post('/api/rooms',formData,{headers:{Authorization:`Bearer ${await getToken()}`}})
+            const token = await getToken();
+            const {data}=await axios.post('/api/rooms',formData,{headers:{Authorization:`Bearer ${token}`}})
 
             if(data.success){
                 toast.success(data.message);
+                if (fetchRooms) fetchRooms();
                 setInputs({
                     roomType:'',
                     pricePerNight:0,

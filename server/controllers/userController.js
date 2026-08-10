@@ -15,14 +15,21 @@ export const getUserData=async(req,res)=>{
 //store user recent searched cities
 export const storeRecentSearchedCities=async(req,res)=>{
     try {
-        const {recentSearchedCities}=req.body;
+        const city = req.body.recentSearchedCity || req.body.recentSearchedCities;
+        if (!city) {
+            return res.json({ success: false, message: "City name is required" });
+        }
         const user=req.user;
 
+        if (!user.recentSearchedCities) {
+            user.recentSearchedCities = [];
+        }
+
         if(user.recentSearchedCities.length<3){
-            user.recentSearchedCities.push(recentSearchedCities)
+            user.recentSearchedCities.push(city)
         }else{
             user.recentSearchedCities.shift();
-            user.recentSearchedCities.push(recentSearchedCities);
+            user.recentSearchedCities.push(city);
         }
         await user.save();
         res.json({success:true,message:"City Added"})

@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import axios from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import {useNavigate} from "react-router-dom";
 import {useUser,useAuth} from "@clerk/react";
 import {toast} from 'react-hot-toast';
@@ -23,9 +24,9 @@ export const AppProvider=({children})=>{
     const [searchedCities,setSearchedCities]=useState([])
     const [rooms,setRooms]=useState([])
 
-    const fetchRooms=async()=>{
+    const fetchRooms=useCallback(async()=>{
         try {
-            const rooms =await axios.get('/api/rooms')
+            const { data } = await axios.get('/api/rooms')
 
             if(data.success){
                 setRooms(data.rooms)
@@ -35,11 +36,9 @@ export const AppProvider=({children})=>{
         } catch (error) {
             toast.error(error.message);
         }
-    }
+    }, [])
 
-
-
-    const fetchUser=async()=>{
+    const fetchUser=useCallback(async()=>{
         try {
             const token = await getToken();
             if(!token) return;
@@ -47,32 +46,37 @@ export const AppProvider=({children})=>{
 
             if(data.success){
                 setIsOwner(data.role==="hotelOwner");
-                setSearchedCities(data.recentSearchedCities);
-            }else{
-                //retry fetching user details after 5 sec
-
-                setTimeout(()=>{
-                    fetchUser()
-                },5000)
+                setSearchedCities(data.recentSearchedCities || []);
             }
         } catch (error) {
             toast.error(error.message);
         }
-    }
+    }, [getToken])
 
     useEffect(()=>{
         if(user){
-            fetchUser();
+            Promise.resolve().then(() => fetchUser());
         }
-    },[user])
+    },[user, fetchUser])
 
     useEffect(()=>{
-        fetchRooms();
+        let isMounted = true;
+        (async () => {
+            try {
+                const { data } = await axios.get('/api/rooms');
+                if (isMounted && data.success) {
+                    setRooms(data.rooms);
+                }
+            } catch (error) {
+                if (isMounted) toast.error(error.message);
+            }
+        })();
+        return () => { isMounted = false; };
     },[])
 
     const value={
         currency,navigate,user,getToken,isOwner,setIsOwner,axios,showHotelReg,setShowHotelReg,searchedCities,setSearchedCities,
-        rooms,setRooms
+        rooms,setRooms,fetchRooms,fetchUser
     }
 
 
