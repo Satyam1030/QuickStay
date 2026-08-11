@@ -74,30 +74,35 @@ export const createBooking=async(req,res)=>{
             totalPrice,
         })
 
-        const mailOptions={
-            from: process.env.SENDER_EMAIL || process.env.SMTP_USER || 'noreply@quickstay.com',
-            to: req.user.email,
-            subject: 'Hotel Booking Details',
-            html: `
-                <h2>Your Booking Details</h2>
-                <p>Dear ${req.user.username},</p>
-                <p>Thank you for bookings, Here are your booking details:</p>
-                <ul>
-                   <li><strong>Booking ID</strong>:${booking._id}</li>
-                   <li><strong>Hotel Name</strong>:${roomData.hotel.name}</li>
-                   <li><strong>Location</strong>:${roomData.hotel.address}</li>
-                   <li><strong>Date</strong>:${new Date(booking.checkInDate).toDateString()}</li>
-                   <li><strong>Booking Amount</strong>:${process.env.CURRENCY || process.env.currency || '$'} ${booking.totalPrice}</li>
-                </ul>
-                <p>We look forward to welcome you</p>
-                <p>If you want to make any changes, feel free to contact us.</p>
-            `
-        }
+        if (process.env.SMTP_PASS) {
+            const mailOptions={
+                from: process.env.SENDER_EMAIL || process.env.SMTP_USER || 'noreply@quickstay.com',
+                to: req.user.email,
+                subject: 'Hotel Booking Details - QuickStay',
+                html: `
+                    <h2>Your Booking Details</h2>
+                    <p>Dear ${req.user.username},</p>
+                    <p>Thank you for your booking! Here are your reservation details:</p>
+                    <ul>
+                       <li><strong>Booking ID</strong>: ${booking._id}</li>
+                       <li><strong>Hotel Name</strong>: ${roomData.hotel?.name || 'Hotel'}</li>
+                       <li><strong>Location</strong>: ${roomData.hotel?.address || ''}</li>
+                       <li><strong>Date</strong>: ${new Date(booking.checkInDate).toDateString()} - ${new Date(booking.checkOutDate).toDateString()}</li>
+                       <li><strong>Booking Amount</strong>: ${process.env.CURRENCY || process.env.currency || '$'} ${booking.totalPrice}</li>
+                    </ul>
+                    <p>We look forward to welcoming you!</p>
+                    <p>If you want to make any changes, feel free to contact us.</p>
+                `
+            };
 
-        try {
-            await transporter.sendMail(mailOptions);
-        } catch (mailError) {
-            console.error("Failed to send booking confirmation email:", mailError.message);
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log(`Booking confirmation email sent to ${req.user.email}`);
+            } catch (mailError) {
+                console.error("Failed to send booking confirmation email:", mailError.message);
+            }
+        } else {
+            console.warn("SMTP_PASS is not configured in environment variables. Email notification skipped.");
         }
 
         res.json({success:true,message:"Booking Created successfully"});

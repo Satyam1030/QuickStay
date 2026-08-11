@@ -1,12 +1,18 @@
 import nodemailer from "nodemailer";
 
-// Create a transporter using SMTP
+const smtpHost = process.env.SMTP_HOST || "smtp-relay.brevo.com";
+const smtpPort = parseInt(process.env.SMTP_PORT) || 587;
+const smtpUser = process.env.SMTP_USER || process.env.SENDER_EMAIL;
+const smtpPass = process.env.SMTP_PASS;
+
+// Create a transporter using flexible SMTP configuration
 const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
+  host: smtpHost,
+  port: smtpPort,
+  secure: smtpPort === 465, // true for 465, false for 587 or other ports
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: smtpUser,
+    pass: smtpPass,
   },
 });
 
