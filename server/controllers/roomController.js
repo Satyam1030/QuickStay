@@ -20,11 +20,12 @@ export const createRoom=async(req,res)=>{
         const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
         const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
         const apiSecret = (process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET_KEY)?.trim();
+        const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET?.trim();
 
-        if(!cloudName || !apiKey || !apiSecret){
+        if(!cloudName || (!uploadPreset && (!apiKey || !apiSecret))){
             return res.json({
                 success:false,
-                message:"Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing on the server."
+                message:"Cloudinary credentials missing on server. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET (or CLOUDINARY_UPLOAD_PRESET)."
             });
         }
 
@@ -50,10 +51,18 @@ export const createRoom=async(req,res)=>{
                     throw new Error("Invalid file upload input");
                 }
 
-                const response=await cloudinary.uploader.upload(fileSource, {
-                    resource_type: "auto",
-                    folder: "quickstay"
-                });
+                let response;
+                if (uploadPreset) {
+                    response = await cloudinary.uploader.unsigned_upload(fileSource, uploadPreset, {
+                        cloud_name: cloudName,
+                        folder: "quickstay"
+                    });
+                } else {
+                    response = await cloudinary.uploader.upload(fileSource, {
+                        resource_type: "auto",
+                        folder: "quickstay"
+                    });
+                }
                 return response.secure_url;
             });
             images=await Promise.all(uploadImages);
