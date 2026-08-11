@@ -45,6 +45,12 @@ app.use('/api/hotels',hotelRouter)
 app.use('/api/rooms',roomRouter)
 app.use('/api/bookings',bookingRouter)
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+    console.error("Express Error:", err.stack || err.message);
+    res.json({ success: false, message: err.message || "Internal Server Error" });
+});
+
 const PORT=process.env.PORT || 3000;
 
 app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));
