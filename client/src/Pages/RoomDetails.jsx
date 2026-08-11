@@ -48,28 +48,29 @@ const RoomDetails=()=>{
         try {
             e.preventDefault();
             if(!isAvailable){
-                return checkAvailability();
-                const token = await getToken();
-                if (!token) {
-                    toast.error("Please sign in to complete your booking");
-                    return;
-                }
-                const numGuests = Math.max(1, parseInt(guests) || 1);
-                const { data } = await axios.post('/api/bookings/book', {
-                    room: id,
-                    checkInDate,
-                    checkOutDate,
-                    guests: numGuests,
-                    paymentMethod: "Pay At hotel"
-                }, { headers: { Authorization: `Bearer ${token}` } });
+                await checkAvailability();
+                return;
+            }
+            const token = await getToken();
+            if (!token) {
+                toast.error("Please sign in to complete your booking");
+                return;
+            }
+            const numGuests = Math.max(1, parseInt(guests) || 1);
+            const { data } = await axios.post('/api/bookings/book', {
+                room: id,
+                checkInDate,
+                checkOutDate,
+                guests: numGuests,
+                paymentMethod: "Pay At Hotel"
+            }, { headers: { Authorization: `Bearer ${token}` } });
 
-                if(data.success){
-                    toast.success(data.message);
-                    navigate('/my-bookings')
-                    scrollTo(0,0);
-                }else{
-                    toast.error(data.message);
-                }
+            if(data.success){
+                toast.success(data.message);
+                navigate('/my-bookings')
+                scrollTo(0,0);
+            }else{
+                toast.error(data.message);
             }
         } catch (error) {
             toast.error(error.message);
