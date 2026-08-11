@@ -20,21 +20,30 @@ const clerkWebHooks=async(req,res)=>{
         //getting data from request body
         const {data,type}=req.body
 
-        const userData={
-            _id:data.id,
-            email:data.email_addresses[0].email_address,
-            username:data.first_name + " " +data.last_name,
-            image:data.image_url,
-        }
+        const email = data.email_addresses?.[0]?.email_address || "";
+        const username = `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username || "User";
+        const image = data.image_url || "";
 
         //switch cases for different cases
         switch(type){
             case "user.created":{
+                const userData = {
+            _id: data.id,
+            email,
+            username,
+            image,
+            }
                 await User.create(userData);
                 break;
             }
 
             case "user.updated":{
+                const userData = {
+            _id: data.id,
+            email,
+            username,
+            image,
+        }
                 await User.findByIdAndUpdate(data.id,userData);
                 break;
             }

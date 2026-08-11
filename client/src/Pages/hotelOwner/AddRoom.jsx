@@ -31,9 +31,8 @@ const AddRoom=()=>{
 
     const onSubmitHandler=async(e)=>{
         e.preventDefault();
-        //check if all inputs are filled
-        if(!inputs.roomType || !inputs.amenities || !inputs.pricePerNight || !Object.values(images).some(image=>image)){
-            toast.error("Please fill in all the details");
+        if(!inputs.roomType || Number(inputs.pricePerNight) <= 0 || !Object.values(images).some(image=>image)){
+            toast.error("Please select a room type, enter a valid price, and upload at least one image");
             return;
         }
         setLoading(true);

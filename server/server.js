@@ -7,6 +7,8 @@ import cors from "cors";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config();
+
 import connectDB from "./configs/db.js";
 import { clerkMiddleware } from '@clerk/express'
 import clerkWebHooks from "./controllers/clerkWebHooks.js";
@@ -16,14 +18,17 @@ import connectCloudinary from "./configs/cloudinary.js";
 import roomRouter from "./routes/roomRoutes.js";
 import bookingRouter from "./routes/bookingRoutes.js";
 
-
 connectDB();
 connectCloudinary();
 
-const app=express();
-app.use(cors()); 
+const app = express();
 
-app.use(express.json())
+app.use(cors({
+    origin: true,
+    credentials: true,
+}));
+
+app.use(express.json());
 app.use(clerkMiddleware())
 
 //api to listen clerk webhook

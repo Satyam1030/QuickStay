@@ -19,10 +19,11 @@ const AllRooms=()=>{
     const [selectedSort,setSelectedSort]=useState('')
     
 
-    const CheckBox=({label,selected=false,onChange=()=>{}})=>{
+    const CheckBox=({label,value,selected=false,onChange=()=>{}})=>{
+        const val = value !== undefined ? value : label;
         return (
             <label className="flex gap-3 items-center cursor-pointer mt-2 text-sm">
-                <input type="checkbox" checked={selected} onChange={(e)=>onChange(e.target.checked,label)}/>
+                <input type="checkbox" checked={selected} onChange={(e)=>onChange(e.target.checked,val)}/>
                 <span className="font-light select-none">{label}</span>
             </label>
         )
@@ -191,8 +192,8 @@ const AllRooms=()=>{
                     <div className="px-5 pt-5">
                         <p className="font-medium text-gray-800 pb-2">Price Range</p>
                         {priceRange.map((range,index)=>(
-                            <CheckBox key={index} label={`${currency} ${range}`} selected={selectedFilters.priceRange.includes(range)} 
-                            onChange={(checked)=>handleFilterChange(checked,range,'priceRange')}/>
+                            <CheckBox key={index} label={`${currency} ${range}`} value={range} selected={selectedFilters.priceRange.includes(range)} 
+                            onChange={(checked, val)=>handleFilterChange(checked,val,'priceRange')}/>
                         ))}
                     </div>
 

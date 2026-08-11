@@ -49,10 +49,19 @@ const RoomDetails=()=>{
             e.preventDefault();
             if(!isAvailable){
                 return checkAvailability();
-            }else{
                 const token = await getToken();
-                const { data }=await axios.post('/api/bookings/book',{room:id,checkInDate,checkOutDate,guests,paymentMethod:"Pay At hotel"},
-                {headers:{Authorization:`Bearer ${token}`}})
+                if (!token) {
+                    toast.error("Please sign in to complete your booking");
+                    return;
+                }
+                const numGuests = Math.max(1, parseInt(guests) || 1);
+                const { data } = await axios.post('/api/bookings/book', {
+                    room: id,
+                    checkInDate,
+                    checkOutDate,
+                    guests: numGuests,
+                    paymentMethod: "Pay At hotel"
+                }, { headers: { Authorization: `Bearer ${token}` } });
 
                 if(data.success){
                     toast.success(data.message);
