@@ -9,26 +9,63 @@ export const createRoom=async(req,res)=>{
         const hotel=await Hotel.findOne({owner:req.user._id});
 
         if(!hotel){
-            return res.json({success:false,message:"No Hotel found"})
+            return res.json({success:false,message:"No Hotel found for this user account. Please register your hotel first."})
         }
 
-        //upload image to cloudinary
-        const uploadImages=req.files.map(async(file)=>{
-            const response=await cloudinary.uploader.upload(file.path);
-            return response.secure_url;
-        })
+        if(!req.files || req.files.length===0){
+            return res.json({success:false,message:"At least one room image is required"})
+        }
 
-        const images=await Promise.all(uploadImages);
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET_KEY;
+
+        if(!cloudName || !apiKey || !apiSecret){
+            return res.json({
+                success:false,
+                message:"Cloudinary environment variables (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET) are missing on the server."
+            });
+        }
+
+        cloudinary.config({
+            cloud_name: cloudName,
+            api_key: apiKey,
+            api_secret: apiSecret
+        });
+
+        //upload image to cloudinary
+        let images = [];
+        try {
+            const uploadImages=req.files.map(async(file)=>{
+                const response=await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+                return response.secure_url;
+            });
+            images=await Promise.all(uploadImages);
+        } catch (cloudErr) {
+            console.error("Cloudinary upload error:", cloudErr.message || cloudErr);
+            return res.json({
+                success:false,
+                message:`Image upload failed: ${cloudErr.message || "Cloudinary 403 Forbidden. Please verify Cloudinary API credentials in your environment variables."}`
+            });
+        }
+
+        let parsedAmenities = [];
+        try {
+            parsedAmenities = typeof amenities === "string" ? JSON.parse(amenities) : (amenities || []);
+        } catch (e) {
+            parsedAmenities = [];
+        }
 
         await Room.create({
             hotel:hotel._id,
             roomType,
             pricePerNight:+pricePerNight,
-            amenities:JSON.parse(amenities), 
+            amenities: parsedAmenities, 
             images,
         })
         res.json({success:true,message:"Room created successfully"})
     } catch (error) {
+        console.error("createRoom error:", error.message);
         res.json({success:false,message:error.message})
     }
 }

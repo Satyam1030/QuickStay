@@ -74,7 +74,8 @@ const AddRoom=()=>{
         }
         }
         catch(error){
-            toast.error(error.message);
+            const errorMsg = error.response?.data?.message || error.message;
+            toast.error(errorMsg);
         }finally{
             setLoading(false);
         }
