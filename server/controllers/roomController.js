@@ -16,9 +16,9 @@ export const createRoom=async(req,res)=>{
             return res.json({success:false,message:"At least one room image is required"})
         }
 
-        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-        const apiKey = process.env.CLOUDINARY_API_KEY;
-        const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET_KEY;
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+        const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+        const apiSecret = (process.env.CLOUDINARY_API_SECRET || process.env.CLOUDINARY_SECRET_KEY)?.trim();
 
         if(!cloudName || !apiKey || !apiSecret){
             return res.json({
