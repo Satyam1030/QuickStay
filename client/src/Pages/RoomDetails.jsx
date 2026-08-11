@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { assets, facilityIcons, roomCommonData } from "../assets/assets";
 import StarRating from "../Components/StarRating";
-import satyam from "..//assets/satyam.jpg"
+import satyam from "../assets/Satyam.jpg";
 import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
 
