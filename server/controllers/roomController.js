@@ -1,6 +1,7 @@
 import Hotel from "../models/Hotel.js";
 import {v2 as cloudinary} from "cloudinary";
 import Room from "../models/Room.js";
+import fs from "fs";
 
 //Api to create new room for hotel
 export const createRoom=async(req,res)=>{
@@ -37,7 +38,19 @@ export const createRoom=async(req,res)=>{
         let images = [];
         try {
             const uploadImages=req.files.map(async(file)=>{
-                const response=await cloudinary.uploader.upload(file.path, {
+                let fileSource;
+                if (file.buffer) {
+                    const b64 = Buffer.from(file.buffer).toString("base64");
+                    fileSource = `data:${file.mimetype || "image/jpeg"};base64,${b64}`;
+                } else if (file.path && fs.existsSync(file.path)) {
+                    const fileBuffer = fs.readFileSync(file.path);
+                    const b64 = Buffer.from(fileBuffer).toString("base64");
+                    fileSource = `data:${file.mimetype || "image/jpeg"};base64,${b64}`;
+                } else {
+                    throw new Error("Invalid file upload input");
+                }
+
+                const response=await cloudinary.uploader.upload(fileSource, {
                     resource_type: "auto",
                     folder: "quickstay"
                 });
