@@ -37,7 +37,10 @@ export const createRoom=async(req,res)=>{
         let images = [];
         try {
             const uploadImages=req.files.map(async(file)=>{
-                const response=await cloudinary.uploader.upload(file.path, { resource_type: "image" });
+                const response=await cloudinary.uploader.upload(file.path, {
+                    resource_type: "auto",
+                    folder: "quickstay"
+                });
                 return response.secure_url;
             });
             images=await Promise.all(uploadImages);
@@ -45,7 +48,7 @@ export const createRoom=async(req,res)=>{
             console.error("Cloudinary upload error:", cloudErr.message || cloudErr);
             return res.json({
                 success:false,
-                message:`Image upload failed: ${cloudErr.message || "Cloudinary 403 Forbidden. Please verify Cloudinary API credentials in your environment variables."}`
+                message:`Image upload failed: ${cloudErr.message || "Cloudinary 403 Forbidden. Please verify Cloudinary API credentials in your server .env file."}`
             });
         }
 
